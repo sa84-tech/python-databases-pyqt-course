@@ -8,9 +8,11 @@ from utils.decorators import Log
 from utils.constants import DEFAULT_PORT, MAX_CONNECTIONS, RESPONSE, ERROR, ACTION, USER, PRESENCE, TIME, \
     RESPONSE_DEFAULT_IP_ADDRESS, MESSAGE, SENDER, MESSAGE_TEXT, RECIPIENT, EXIT, CODE, ACCOUNT_NAME, ALERT
 from utils.messaging import Messaging
+from utils.descriptors import CheckPort
 
 
 class Server(Messaging):
+    port = CheckPort()
 
     def __init__(self, ip_address='', port=DEFAULT_PORT):
         super().__init__()

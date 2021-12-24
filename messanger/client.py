@@ -9,11 +9,14 @@ from utils.decorators import Log
 from utils.constants import DEFAULT_PORT, DEFAULT_IP_ADDRESS, RESPONSE, ERROR, ACTION, PRESENCE, TIME, USER, \
     MESSAGE, SENDER, RECIPIENT, EXIT, ACCOUNT_NAME, ALERT, CODE
 from utils.messaging import Messaging
+from utils.descriptors import CheckPort
 
 from messanger.utils.constants import MESSAGE, MESSAGE_TEXT
 
 
 class Client(Messaging):
+    srv_port = CheckPort()
+
     def __init__(self, srv_address=DEFAULT_IP_ADDRESS, srv_port=DEFAULT_PORT, account_name='Guest'):
         super().__init__()
         self.srv_address = srv_address
