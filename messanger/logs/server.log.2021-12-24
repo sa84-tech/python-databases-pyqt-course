@@ -1,0 +1,29 @@
+2021-12-24 15:12:10,604 - INFO     - server - Server is running on port 7777
+2021-12-24 15:12:10,717 - INFO     - server - Client ('127.0.0.1', 63907) has connected to Chat
+2021-12-24 15:12:10,732 - INFO     - server - Client ('127.0.0.1', 63908) has connected to Chat
+2021-12-24 15:12:10,754 - INFO     - server - Client ('127.0.0.1', 63909) has connected to Chat
+2021-12-24 15:12:23,278 - INFO     - server - Client ('127.0.0.1', 63908), user3 left the Chat.
+2021-12-24 15:12:25,281 - INFO     - server - Client ('127.0.0.1', 63907), user2 left the Chat.
+2021-12-24 15:12:27,287 - INFO     - server - Client ('127.0.0.1', 63909), user1 left the Chat.
+2021-12-24 15:46:45,248 - INFO     - server - Server is running on port 7777
+2021-12-24 15:46:53,545 - INFO     - server - Client ('127.0.0.1', 64655) has connected to Chat
+2021-12-24 15:48:12,879 - INFO     - server - Client ('127.0.0.1', 64674) has connected to Chat
+2021-12-24 15:48:16,387 - INFO     - server - Client ('127.0.0.1', 64674), Guest left the Chat.
+2021-12-24 15:54:44,809 - INFO     - server - Client ('127.0.0.1', 64875) has connected to Chat
+2021-12-24 15:54:46,814 - INFO     - server - Client ('127.0.0.1', 64875), Guest left the Chat.
+2021-12-24 15:56:57,626 - INFO     - server - Server is running on port 7776
+2021-12-24 16:03:32,584 - INFO     - server - Server is running on port 7776
+2021-12-24 16:03:57,946 - INFO     - server - Client ('127.0.0.1', 64655), Guest left the Chat.
+2021-12-24 16:03:57,947 - WARNING  - server - Client ('127.0.0.1', 64655) unexpectedly disconnected from Chat
+2021-12-24 16:04:22,407 - INFO     - server - Server is running on port 7777
+2021-12-24 16:04:25,439 - INFO     - server - Client ('127.0.0.1', 65068) has connected to Chat
+2021-12-24 16:04:34,449 - INFO     - server - Client ('127.0.0.1', 65068), Guest left the Chat.
+2021-12-24 16:04:39,892 - INFO     - server - Client ('127.0.0.1', 65070) has connected to Chat
+2021-12-24 16:05:10,120 - INFO     - server - Client ('127.0.0.1', 65077) has connected to Chat
+2021-12-24 16:05:36,957 - INFO     - server - Client ('127.0.0.1', 65082) has connected to Chat
+2021-12-24 16:07:03,861 - INFO     - server - Client ('127.0.0.1', 65094) has connected to Chat
+2021-12-24 16:07:43,908 - INFO     - server - Client ('127.0.0.1', 65077), Guest left the Chat.
+2021-12-24 16:07:57,615 - INFO     - server - Client ('127.0.0.1', 65070), Guest left the Chat.
+2021-12-24 16:58:07,939 - INFO     - server - Client ('127.0.0.1', 65094), user61 left the Chat.
+2021-12-24 17:11:44,173 - INFO     - server - Server is running on port 7776
+2021-12-24 17:37:26,705 - INFO     - server - Server is running on port 7776

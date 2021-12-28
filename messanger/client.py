@@ -7,18 +7,17 @@ import threading
 
 from utils.decorators import Log
 from utils.constants import DEFAULT_PORT, DEFAULT_IP_ADDRESS, RESPONSE, ERROR, ACTION, PRESENCE, TIME, USER, \
-    MESSAGE, SENDER, RECIPIENT, EXIT, ACCOUNT_NAME, ALERT, CODE
-from utils.messaging import Messaging
+    MESSAGE, SENDER, RECIPIENT, EXIT, ACCOUNT_NAME, ALERT, CODE, ENCODING, MAX_PACKAGE_LENGTH, MESSAGE_TEXT
+from utils.messaging import get_address, get_port, get_name
 from utils.descriptors import CheckPort
 
-from messanger.utils.constants import MESSAGE, MESSAGE_TEXT
 
-
-class Client(Messaging):
+class Client:
     srv_port = CheckPort()
+    encoding = ENCODING
+    max_package_length = MAX_PACKAGE_LENGTH
 
     def __init__(self, srv_address=DEFAULT_IP_ADDRESS, srv_port=DEFAULT_PORT, account_name='Guest'):
-        super().__init__()
         self.srv_address = srv_address
         self.srv_port = srv_port
         self.account_name = account_name
@@ -29,6 +28,25 @@ class Client(Messaging):
     def __str__(self):
         return f'Client ({socket.gethostname()}, name: {self.account_name}) ' \
                f'is connected to {self.srv_address}:{self.srv_port}'
+
+    @Log()
+    def get_message(self, sender):
+        encoded_response = sender.recv(self.max_package_length)
+        if isinstance(encoded_response, bytes):
+            if len(encoded_response) == 0:
+                return ''
+            json_response = encoded_response.decode(self.encoding)
+            response = json.loads(json_response)
+            if isinstance(response, dict):
+                return response
+            raise ValueError
+        raise ValueError
+
+    @Log()
+    def send_message(self, recipient, message):
+        json_message = json.dumps(message)
+        encoded_message = json_message.encode(self.encoding)
+        recipient.send(encoded_message)
 
     @Log()
     def parse_message(self, message):
@@ -186,12 +204,11 @@ if __name__ == '__main__':
             sys.exit(1)
         return value
 
-
     logger = logging.getLogger('client')
 
-    address = check_error(*Messaging.get_address(sys.argv))
-    port = check_error(*Messaging.get_port(sys.argv))
-    name = check_error(*Messaging.get_name(sys.argv))
+    address = check_error(*get_address(sys.argv))
+    port = check_error(*get_port(sys.argv))
+    name = check_error(*get_name(sys.argv))
 
     client = Client(srv_address=address, srv_port=port, account_name=name)
     client.connect()

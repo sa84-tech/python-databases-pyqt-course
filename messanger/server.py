@@ -2,20 +2,39 @@ import socket
 import sys
 import logging
 import time
+import json
 
 import select
 from utils.decorators import Log
 from utils.constants import DEFAULT_PORT, MAX_CONNECTIONS, RESPONSE, ERROR, ACTION, USER, PRESENCE, TIME, \
-    RESPONSE_DEFAULT_IP_ADDRESS, MESSAGE, SENDER, MESSAGE_TEXT, RECIPIENT, EXIT, CODE, ACCOUNT_NAME, ALERT
-from utils.messaging import Messaging
+    RESPONSE_DEFAULT_IP_ADDRESS, MESSAGE, SENDER, MESSAGE_TEXT, RECIPIENT, EXIT, CODE, ACCOUNT_NAME, ALERT, \
+    MAX_PACKAGE_LENGTH, ENCODING
+from utils.messaging import get_address, get_port, get_name
 from utils.descriptors import CheckPort
+from utils.metaclasses import ServerVerifier
 
 
-class Server(Messaging):
+def upper_attr(future_class_name, future_class_parents, future_class_attrs):
+    """
+      Return a class object, with the list of its attribute turned
+      into uppercase.
+    """
+    # pick up any attribute that doesn't start with '__' and uppercase it
+    uppercase_attrs = {
+        attr if attr.startswith("__") else attr.upper(): v
+        for attr, v in future_class_attrs.items()
+    }
+
+    # let `type` do the class creation
+    return type(future_class_name, future_class_parents, uppercase_attrs)
+
+
+class Server(metaclass=ServerVerifier):
     port = CheckPort()
+    encoding = ENCODING
+    max_package_length = MAX_PACKAGE_LENGTH
 
     def __init__(self, ip_address='', port=DEFAULT_PORT):
-        super().__init__()
         self.ip_address = ip_address
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,7 +46,23 @@ class Server(Messaging):
     def __str__(self):
         return f'Server is running on port {self.port}'
 
-    @Log()
+    def get_message(self, sender):
+        encoded_response = sender.recv(self.max_package_length)
+        if isinstance(encoded_response, bytes):
+            if len(encoded_response) == 0:
+                return ''
+            json_response = encoded_response.decode(self.encoding)
+            response = json.loads(json_response)
+            if isinstance(response, dict):
+                return response
+            raise ValueError
+        raise ValueError
+
+    def send_message(self, recipient, message):
+        json_message = json.dumps(message)
+        encoded_message = json_message.encode(self.encoding)
+        recipient.send(encoded_message)
+
     def parse_message(self, message, sock):
         if ACTION in message:
             if message[ACTION] == PRESENCE and TIME in message and USER in message:
@@ -46,7 +81,6 @@ class Server(Messaging):
 
         return self.create_message(error=f'Bad request', code=400)
 
-    @Log()
     def create_message(self, code, recipient='Unknown', alert=None, error=None):
         message = {
             CODE: code,
@@ -59,7 +93,6 @@ class Server(Messaging):
 
         return message
 
-    @Log()
     def get_recipient(self, message):
         user = message[RECIPIENT]
         try:
@@ -68,7 +101,6 @@ class Server(Messaging):
             return None
         return sock
 
-    @Log()
     def listen(self):
         self.socket.bind((self.ip_address, self.port))
         self.socket.settimeout(0.5)
@@ -129,12 +161,12 @@ class Server(Messaging):
 
 if __name__ == '__main__':
     logger = logging.getLogger('Server')
-    address, message = Messaging.get_address(sys.argv)
+    address, message = get_address(sys.argv)
     if address == -1:
         logger.critical(message)
         sys.exit(1)
 
-    port, message = Messaging.get_port(sys.argv)
+    port, message = get_port(sys.argv)
     if port == -1:
         logger.critical(message)
         sys.exit(1)
