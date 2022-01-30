@@ -11,17 +11,19 @@ from utils.constants import DEFAULT_PORT, DEFAULT_IP_ADDRESS, RESPONSE, ERROR, A
 from utils.messaging import get_address, get_port, get_name
 from utils.descriptors import CheckPort
 
+from utils.metaclasses import ClientVerifier
 
-class Client:
+
+class Client(metaclass=ClientVerifier):
     srv_port = CheckPort()
     encoding = ENCODING
     max_package_length = MAX_PACKAGE_LENGTH
 
-    def __init__(self, srv_address=DEFAULT_IP_ADDRESS, srv_port=DEFAULT_PORT, account_name='Guest'):
+    def __init__(self, sock, srv_address=DEFAULT_IP_ADDRESS, srv_port=DEFAULT_PORT, account_name='Guest'):
         self.srv_address = srv_address
         self.srv_port = srv_port
         self.account_name = account_name
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = sock
         self.logger = logging.getLogger('client')
         self.is_exit = False
 
@@ -100,7 +102,7 @@ class Client:
             if command == 'm':
                 message = self.create_message()
                 try:
-                    self.send_message(self.socket, message)
+                    self.send_message(self.sock, message)
                     print(f'Message sent to {message[RECIPIENT]}')
                 except ConnectionError:
                     self.logger.error(f'Connection with server {self.srv_address} lost.')
@@ -120,7 +122,7 @@ class Client:
     def start_reception_mode(self):
         while True:
             try:
-                res = self.get_message(self.socket)
+                res = self.get_message(self.sock)
                 if res:
                     in_message, code = self.parse_message(res)
                     print(in_message)
@@ -138,12 +140,12 @@ class Client:
     def register(self):
         while True:
             init_message = self.create_init_message()
-            self.send_message(self.socket, init_message)
-            message = self.get_message(self.socket)
+            self.send_message(self.sock, init_message)
+            message = self.get_message(self.sock)
             response, code = self.parse_message(message)
             if code == 200:
-                print(f'Connection established, Server: {self.socket.getpeername()}, '
-                      f'Client: {self.socket.getsockname()}')
+                print(f'Connection established, Server: {self.sock.getpeername()}, '
+                      f'Client: {self.sock.getsockname()}')
                 print('Response from Server: ', response)
                 break
             else:
@@ -162,8 +164,8 @@ class Client:
     @Log()
     def shutdown(self):
         self.is_exit = True
-        self.send_message(self.socket, self.create_final_message())
-        self.socket.shutdown(socket.SHUT_RDWR)
+        self.send_message(self.sock, self.create_final_message())
+        self.sock.shutdown(socket.SHUT_RDWR)
         self.logger.info('Shutdown by user command')
         print('Bye')
         time.sleep(0.5)
@@ -172,7 +174,7 @@ class Client:
     @Log()
     def connect(self):
         try:
-            self.socket.connect((self.srv_address, self.srv_port))
+            self.sock.connect((self.srv_address, self.srv_port))
             self.logger.info(self)
             self.register()
         except ConnectionError:
@@ -210,5 +212,7 @@ if __name__ == '__main__':
     port = check_error(*get_port(sys.argv))
     name = check_error(*get_name(sys.argv))
 
-    client = Client(srv_address=address, srv_port=port, account_name=name)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    client = Client(sock, srv_address=address, srv_port=port, account_name=name)
     client.connect()

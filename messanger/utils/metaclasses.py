@@ -18,17 +18,15 @@ import dis
 
 class ServerVerifier(type):
     def __init__(cls, name, bases, dict):
-        print(f'__init__({name}, {bases}, {dict})')
-        attrs = []
+        attrs = set()
         for val in dict.values():
             if isinstance(val, types.FunctionType):
-                print('__init__ (val):', val)
                 dis_res = dis.get_instructions(val)
                 for inst in dis_res:
                     if inst.opname == 'LOAD_GLOBAL' and inst.argval == 'connect':
                         raise SyntaxError('You cannot use call connections for sockets ')
                     elif inst.opname == 'LOAD_ATTR':
-                        attrs.append(inst.argval)
+                        attrs.add(inst.argval)
         print(attrs)
         if not ('SOCK_STREAM' in attrs and 'AF_INET' in attrs):
             raise SyntaxError('Only TCP protocol supported for socket')
@@ -39,7 +37,7 @@ class ServerVerifier(type):
 class ClientVerifier(type):
     def __init__(cls, name, bases, dict):
         print(f'__init__({name}, {bases}, {dict})')
-        attrs = []
+        attrs = set()
         methods = []
         for val in dict.values():
             if isinstance(val, types.FunctionType):
@@ -48,12 +46,14 @@ class ClientVerifier(type):
                 for inst in dis_res:
                     if inst.opname == 'LOAD_GLOBAL':
                         methods.append(inst.argval)
-                    # if inst.opname == 'LOAD_GLOBAL' and inst.argval in ('socket', 'listen', 'accept'):
-                    #         raise SyntaxError('You cannot use call connections for sockets.')
                     elif inst.opname == 'LOAD_ATTR':
-                        attrs.append(inst.argval)
+                        attrs.add(inst.argval)
         print(' *********** methods:', methods)
         print(' *********** attrs:', attrs)
+
+        for method in methods:
+            if method in ('accept', 'listen', 'socket'):
+                raise SyntaxError('You cannot use call accept and listen methods for Client.')
 
         if not ('SOCK_STREAM' in attrs and 'AF_INET' in attrs):
             raise SyntaxError('Only TCP protocol supported for socket')
