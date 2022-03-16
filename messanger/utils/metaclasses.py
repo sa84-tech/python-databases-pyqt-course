@@ -55,7 +55,7 @@ class ClientVerifier(type):
             if method in ('accept', 'listen', 'socket'):
                 raise SyntaxError('You cannot use call accept and listen methods for Client.')
 
-        if not ('SOCK_STREAM' in attrs and 'AF_INET' in attrs):
-            raise SyntaxError('Only TCP protocol supported for socket')
+        if not ('get_message' in attrs and 'send_message' in methods):
+            raise SyntaxError('You have to use socket function calls')
 
         super(ClientVerifier, cls).__init__(name, bases, dict)

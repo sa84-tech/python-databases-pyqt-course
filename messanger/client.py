@@ -28,10 +28,10 @@ class Client(metaclass=ClientVerifier):
         self.is_exit = False
 
     def __str__(self):
-        return f'Client ({socket.gethostname()}, name: {self.account_name}) ' \
+        return f'Client {self.account_name}) ' \
                f'is connected to {self.srv_address}:{self.srv_port}'
 
-    @Log()
+    # @Log()
     def get_message(self, sender):
         encoded_response = sender.recv(self.max_package_length)
         if isinstance(encoded_response, bytes):
@@ -44,13 +44,13 @@ class Client(metaclass=ClientVerifier):
             raise ValueError
         raise ValueError
 
-    @Log()
+    # @Log()
     def send_message(self, recipient, message):
         json_message = json.dumps(message)
         encoded_message = json_message.encode(self.encoding)
         recipient.send(encoded_message)
 
-    @Log()
+    # @Log()
     def parse_message(self, message):
         if CODE in message:
             if message[CODE] == 200:
@@ -62,7 +62,7 @@ class Client(metaclass=ClientVerifier):
             return f'\nIncoming message from {message[SENDER]}:\n{message[MESSAGE_TEXT]}', 200
         raise ValueError
 
-    @Log()
+    # @Log()
     def create_init_message(self):
         message = {
             ACTION: PRESENCE,
@@ -73,7 +73,7 @@ class Client(metaclass=ClientVerifier):
         }
         return message
 
-    @Log()
+    # @Log()
     def create_message(self):
         recipient = input('Enter recipient: ')
         text = input('Enter message: ')
@@ -86,7 +86,7 @@ class Client(metaclass=ClientVerifier):
         }
         return message
 
-    @Log()
+    # @Log()
     def create_final_message(self):
         message = {
             ACTION: EXIT,
@@ -95,7 +95,7 @@ class Client(metaclass=ClientVerifier):
         }
         return message
 
-    @Log()
+    # @Log()
     def start_sending_mode(self):
         while True:
             command = input('Select action, m - send message, q - exit: ')
@@ -118,7 +118,7 @@ class Client(metaclass=ClientVerifier):
 
             time.sleep(0.5)
 
-    @Log()
+    # @Log()
     def start_reception_mode(self):
         while True:
             try:
@@ -136,7 +136,7 @@ class Client(metaclass=ClientVerifier):
                 self.logger.error('Failed to decode server message')
                 break
 
-    @Log()
+    # @Log()
     def register(self):
         while True:
             init_message = self.create_init_message()
@@ -161,7 +161,7 @@ class Client(metaclass=ClientVerifier):
                     else:
                         print('Unknown command')
 
-    @Log()
+    # @Log()
     def shutdown(self):
         self.is_exit = True
         self.send_message(self.sock, self.create_final_message())
@@ -171,7 +171,7 @@ class Client(metaclass=ClientVerifier):
         time.sleep(0.5)
         sys.exit(0)
 
-    @Log()
+    # @Log()
     def connect(self):
         try:
             self.sock.connect((self.srv_address, self.srv_port))
@@ -199,20 +199,27 @@ class Client(metaclass=ClientVerifier):
                 break
 
 
-if __name__ == '__main__':
-    def check_error(value, message):
-        if value == -1:
-            logger.critical(message)
-            sys.exit(1)
-        return value
+@Log()
+def check_error(value, message, logger):
+    if value == -1:
+        logger.critical(message)
+        sys.exit(1)
+    return value
 
+
+@Log()
+def main():
     logger = logging.getLogger('client')
 
-    address = check_error(*get_address(sys.argv))
-    port = check_error(*get_port(sys.argv))
-    name = check_error(*get_name(sys.argv))
+    address = check_error(*get_address(sys.argv), logger=logger)
+    port = check_error(*get_port(sys.argv), logger=logger)
+    name = check_error(*get_name(sys.argv), logger=logger)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     client = Client(sock, srv_address=address, srv_port=port, account_name=name)
     client.connect()
+
+
+if __name__ == '__main__':
+    main()
